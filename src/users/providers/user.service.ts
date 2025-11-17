@@ -1,4 +1,5 @@
 import {
+  HttpStatus,
   Injectable,
   Logger,
   NotFoundException,
@@ -10,6 +11,7 @@ import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 
 @Injectable()
 export class UserService {
@@ -29,7 +31,7 @@ export class UserService {
     return await this.findOneByEmailProvider.findOneByEmail(email);
   }
 
-  public async findOneById(id: string) {
+  public async findOneById(id: string): Promise<ResObjDto<any>> {
     let user: User | null;
 
     try {
@@ -50,6 +52,6 @@ export class UserService {
       );
     }
 
-    return user;
+    return new ResObjDto(user, HttpStatus.OK, 'Success');
   }
 }

@@ -7,6 +7,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { UserRole } from '../user.entity';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'testFirst' })
@@ -28,6 +29,17 @@ export class CreateUserDto {
   @IsNotEmpty()
   @MaxLength(96)
   email: string;
+
+  @ApiProperty({ example: 'customer | admin', enum: UserRole })
+  @IsNotEmpty()
+  @Matches(
+    `^${Object.values(UserRole)
+      .filter((v) => typeof v !== 'number')
+      .join('|')}$`,
+    'i',
+  )
+  @MaxLength(96)
+  role: UserRole;
 
   @ApiProperty({ example: 'Password#123' })
   @IsString()

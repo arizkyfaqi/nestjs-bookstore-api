@@ -23,6 +23,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateStockBookDto } from './dto/update-stock-book';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 
 @Controller('books')
 @ApiBearerAuth('access-token')
@@ -32,15 +33,18 @@ export class BooksController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
-  findAll(@CurrentUser() user: TokenPayload) {
+  findAll(@CurrentUser() user: TokenPayload): Promise<ResObjDto<any>> {
     return this.booksService.findAll(user);
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
-  findOne(@Param('id', new ParseIntPipe()) id: number) {
-    return this.booksService.findOne(id);
+  async findOne(
+    @Param('id', new ParseIntPipe()) id: number,
+  ): Promise<ResObjDto<any>> {
+    const book = await this.booksService.findOne(id);
+    return new ResObjDto(book, HttpStatus.OK, 'Success');
   }
 
   @Post()

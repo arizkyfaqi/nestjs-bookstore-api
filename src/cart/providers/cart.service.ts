@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -11,6 +12,8 @@ import { User } from 'src/users/user.entity';
 import { AddToCartDto } from '../dto/add-to-cart.dto';
 import { UpdateCartDto } from '../dto/update-cart.dto';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
+import { ResMsgDto } from 'src/utils/dto/res-msg.dto';
 
 @Injectable()
 export class CartService {
@@ -24,7 +27,10 @@ export class CartService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async addToCart(user_: TokenPayload, dto: AddToCartDto) {
+  async addToCart(
+    user_: TokenPayload,
+    dto: AddToCartDto,
+  ): Promise<ResObjDto<any>> {
     const user = await this.userRepo.findOne({ where: { id: user_.userId } });
     return await this.dataSource.transaction(async (manager) => {
       const book = await manager.getRepository(Book).findOne({
@@ -65,18 +71,31 @@ export class CartService {
       }
 
       // Simpan cart item
-      return await manager.getRepository(CartItem).save(cartItem);
+      const saveCart = await manager.getRepository(CartItem).save(cartItem);
+      const data: any = {
+        id: saveCart.id,
+        userId: saveCart.userId,
+        bookId: saveCart.bookId,
+        quantity: saveCart.quantity,
+        createdAt: saveCart.createdAt,
+      };
+
+      return new ResObjDto(data, HttpStatus.OK, 'Success');
     });
   }
 
-  async getCart(user: TokenPayload) {
+  async getCart(user: TokenPayload): Promise<ResObjDto<any>> {
     const cart = await this.cartRepo.find({
       where: { user: { id: user.userId } },
     });
-    return cart;
+    return new ResObjDto(cart, HttpStatus.OK, 'Success');
   }
 
-  async updateCartItem(user: TokenPayload, itemId: string, dto: UpdateCartDto) {
+  async updateCartItem(
+    user: TokenPayload,
+    itemId: string,
+    dto: UpdateCartDto,
+  ): Promise<ResObjDto<any>> {
     return await this.dataSource.transaction(async (manager) => {
       // Ambil cart item tanpa JOIN
       const cartItem = await manager
@@ -103,17 +122,27 @@ export class CartService {
 
       cartItem.quantity = dto.quantity;
 
-      return await manager.getRepository(CartItem).save(cartItem);
+      const saveCart = await manager.getRepository(CartItem).save(cartItem);
+
+      const data: any = {
+        id: saveCart.id,
+        userId: saveCart.userId,
+        bookId: saveCart.bookId,
+        quantity: saveCart.quantity,
+        createdAt: saveCart.createdAt,
+      };
+
+      return new ResObjDto(data, HttpStatus.OK, 'Success');
     });
   }
-  async removeItem(user: TokenPayload, itemId: string) {
+  async removeItem(user: TokenPayload, itemId: string): Promise<ResMsgDto> {
     return await this.dataSource.transaction(async (manager) => {
       await manager.getRepository(CartItem).delete({
         id: itemId,
         user: { id: user.userId },
       });
 
-      return { message: 'Item removed from cart' };
+      return new ResMsgDto(HttpStatus.OK, 'Removed');
     });
   }
 }

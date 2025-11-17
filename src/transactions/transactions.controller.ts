@@ -23,21 +23,21 @@ export class TransactionsController {
 
   @Post('checkout')
   @HttpCode(HttpStatus.OK)
-  @Auth(RoleType.CUSTOMER)
+  @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   async checkout(@CurrentUser() user: TokenPayload) {
     return await this.transactionsService.checkout(user.userId);
   }
 
   @Get('orders')
   @HttpCode(HttpStatus.OK)
-  @Auth(RoleType.CUSTOMER)
+  @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   async getOrders(@CurrentUser() user: TokenPayload) {
     return this.transactionsService.findByUser(user.userId);
   }
 
   @Get('orders/:id')
   @HttpCode(HttpStatus.OK)
-  @Auth(RoleType.CUSTOMER)
+  @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   async getOrder(
     @CurrentUser() user: TokenPayload,
     @Param('id', new ParseUUIDPipe()) id: string,

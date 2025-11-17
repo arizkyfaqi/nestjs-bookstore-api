@@ -48,7 +48,7 @@ export class User {
   @Exclude()
   password: string;
 
-  @Column({ default: UserRole.CUSTOMER })
+  @Column({ default: UserRole.CUSTOMER, enum: UserRole, type: 'enum' })
   role: UserRole;
 
   @CreateDateColumn()

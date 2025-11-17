@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -11,6 +12,7 @@ import { User } from 'src/users/user.entity';
 import { TransactionItem } from '../transaction-item.entity';
 import { Transaction } from '../transaction.entity';
 import { PaymentStatus } from '../enum/payment-status.enum';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -33,7 +35,7 @@ export class TransactionsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async checkout(userId: string) {
+  async checkout(userId: string): Promise<ResObjDto<any>> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
@@ -110,7 +112,7 @@ export class TransactionsService {
       const cartIds = cartItemsTx.map((c) => c.id);
       await cartRepoTx.delete(cartIds);
 
-      return {
+      const data: any = {
         id: savedTrx.id,
         totalAmount: savedTrx.totalAmount,
         paymentStatus: savedTrx.paymentStatus,
@@ -122,22 +124,28 @@ export class TransactionsService {
           price: item.price,
         })),
       };
+
+      return new ResObjDto(data, HttpStatus.OK, 'Success');
     });
   }
 
-  async findByUser(userId: string) {
-    return this.transactionRepo.find({
+  async findByUser(userId: string): Promise<ResObjDto<any>> {
+    const order = await this.transactionRepo.find({
       where: { user: { id: userId } },
       relations: ['items', 'items.book'],
       order: { createdAt: 'DESC' },
     });
+    return new ResObjDto(order, HttpStatus.OK, 'Success');
   }
 
-  async findOneForUser(orderId: string, userId: string) {
+  async findOneForUser(
+    orderId: string,
+    userId: string,
+  ): Promise<ResObjDto<any>> {
     const order = await this.transactionRepo.findOne({
       where: { id: orderId, user: { id: userId } },
       relations: ['items', 'items.book'],
     });
-    return order;
+    return new ResObjDto(order, HttpStatus.OK, 'Success');
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import * as fs from 'fs';
@@ -9,6 +9,8 @@ import { CreateBookDto } from '../dto/create-book.dto';
 import { UpdateBookDto } from '../dto/update-book.dto';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { RoleType } from 'src/utils/constants/role-type';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
+import { ResMsgDto } from 'src/utils/dto/res-msg.dto';
 
 @Injectable()
 export class BooksService {
@@ -17,13 +19,14 @@ export class BooksService {
     private readonly repo: Repository<Book>,
   ) {}
 
-  async findAll(user: TokenPayload) {
+  async findAll(user: TokenPayload): Promise<ResObjDto<any>> {
     const condition = { stock: MoreThan(0) };
     let book = await this.repo.find();
     if (user.role == RoleType.CUSTOMER) {
       book = await this.repo.find({ where: condition });
     }
-    return book;
+
+    return new ResObjDto(book, HttpStatus.OK, 'Success');
   }
 
   async findOne(id: number) {
@@ -32,7 +35,10 @@ export class BooksService {
     return book;
   }
 
-  async create(dto: CreateBookDto, cover?: Express.Multer.File) {
+  async create(
+    dto: CreateBookDto,
+    cover?: Express.Multer.File,
+  ): Promise<ResObjDto<any>> {
     let coverUrl: string = '';
     let thumbUrl: string = '';
 
@@ -53,24 +59,29 @@ export class BooksService {
     }
 
     const book = this.repo.create({ ...dto, coverUrl, thumbnailUrl: thumbUrl });
-    return this.repo.save(book);
+    const data = await this.repo.save(book);
+
+    return new ResObjDto(data, HttpStatus.CREATED, 'Success');
   }
 
-  async update(id: number, dto: UpdateBookDto) {
+  async update(id: number, dto: UpdateBookDto): Promise<ResObjDto<any>> {
     const book = await this.findOne(id);
     Object.assign(book, dto);
-    return this.repo.save(book);
+    const data = await this.repo.save(book);
+    return new ResObjDto(data, HttpStatus.CREATED, 'Success');
   }
 
-  async updateStock(id: number, amount: number) {
+  async updateStock(id: number, amount: number): Promise<ResObjDto<any>> {
     const book = await this.findOne(id);
     book.stock += amount;
     if (book.stock < 0) book.stock = 0;
-    return this.repo.save(book);
+    const data = await this.repo.save(book);
+    return new ResObjDto(data, HttpStatus.CREATED, 'Success');
   }
 
-  async remove(id: number) {
+  async remove(id: number): Promise<ResMsgDto> {
     const book = await this.findOne(id);
-    return this.repo.remove(book);
+    await this.repo.remove(book);
+    return new ResMsgDto(HttpStatus.OK, 'Success');
   }
 }

@@ -12,6 +12,7 @@ import { Auth } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
+import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -23,7 +24,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   @UseInterceptors(ClassSerializerInterceptor)
-  public get(@CurrentUser() user: TokenPayload) {
+  public get(@CurrentUser() user: TokenPayload): Promise<ResObjDto<any>> {
     return this.usersService.findOneById(user.userId);
   }
 }
