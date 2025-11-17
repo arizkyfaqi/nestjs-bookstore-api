@@ -23,7 +23,7 @@ REST API untuk aplikasi **toko buku online**, menggunakan **NestJS**, **PostgreS
 ### Clone Repository
 
 ```bash
-git clone
+git clone https://github.com/arizkyfaqi/nestjs-bookstore-api.git
 cd nestjs-bookstore-api
 npm install
 ```
