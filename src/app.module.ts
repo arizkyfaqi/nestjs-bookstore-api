@@ -45,13 +45,15 @@ const ENV = process.env.NODE_ENV;
         type: 'postgres',
         logging: true,
         // entities: [User],
+        url:
+          configServices.get<string>('database.dbUrl') ||
+          configServices.get<string>('DATABASE_URL'),
         autoLoadEntities: configServices.get('database.autoLoadEntities'),
         synchronize: configServices.get('database.synchronize'),
-        port: +configServices.get('database.port'),
-        username: configServices.get('database.user'),
-        password: configServices.get<string>('database.password'),
-        host: configServices.get('database.host'),
-        database: configServices.get('database.name'),
+        ssl:
+          process.env.NODE_ENV === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
 
