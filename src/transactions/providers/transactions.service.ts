@@ -39,29 +39,36 @@ export class TransactionsService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
 
-    // CHECK cart (outside transaction)
-    const rawCart = await this.cartRepo.find({
+    const cartItems = await this.cartRepo.find({
       where: { user: { id: userId } },
+      relations: ['book'],
     });
 
-    if (rawCart.length === 0) throw new BadRequestException('Cart is empty');
+    if (!cartItems || cartItems.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
 
-    return await this.dataSource.transaction(async (manager) => {
+    // run transaction to lock rows and persist atomic changes
+    const result = await this.dataSource.transaction(async (manager) => {
+      // Re-load cart items with manager to ensure same transactional connection (optional)
       const cartRepoTx = manager.getRepository(CartItem);
       const bookRepoTx = manager.getRepository(Book);
       const trxRepoTx = manager.getRepository(Transaction);
       const trxItemRepoTx = manager.getRepository(TransactionItem);
 
-      const cartItemsTx = await cartRepoTx.find({
-        where: { user: { id: userId } },
-        lock: { mode: 'pessimistic_read' },
-      });
+      // Re-fetch cart items inside transaction and lock them (pessimistic_read to ensure stable view)
+      const cartItemsTx = await cartRepoTx
+        .createQueryBuilder('cart')
+        .innerJoinAndSelect('cart.book', 'book')
+        .innerJoin('cart.user', 'user')
+        .where('user.id = :userId', { userId })
+        .setLock('pessimistic_write')
+        .getMany();
 
-      if (cartItemsTx.length === 0) {
+      if (!cartItemsTx || cartItemsTx.length === 0) {
         throw new BadRequestException('Cart is empty');
       }
 
-      // Prepare transaction
       let totalAmount = 0;
       const trx = new Transaction();
       trx.user = user;
@@ -70,12 +77,13 @@ export class TransactionsService {
 
       for (const ci of cartItemsTx) {
         const book = await bookRepoTx.findOne({
-          where: { id: ci.bookId },
-          lock: { mode: 'pessimistic_write' },
+          where: { id: ci.book.id },
+          lock: { mode: 'pessimistic_write' }, // FOR UPDATE
         });
 
-        if (!book) throw new NotFoundException('Book not found');
+        if (!book) throw new NotFoundException('Book not found: ' + ci.book.id);
 
+        // Validate stock
         if (book.stock < ci.quantity) {
           throw new BadRequestException(
             `Insufficient stock for book ${book.title}`,
@@ -91,7 +99,6 @@ export class TransactionsService {
         tItem.book = book;
         tItem.quantity = ci.quantity;
         tItem.price = book.price;
-
         trx.items.push(tItem);
 
         totalAmount += Number(book.price) * ci.quantity;
@@ -99,18 +106,19 @@ export class TransactionsService {
 
       trx.totalAmount = totalAmount;
 
-      // Save transaction
       const savedTrx = await trxRepoTx.save(trx);
 
-      // Save transaction items
+      // If TransactionItem not cascaded, ensure they reference transaction and are saved:
       for (const item of trx.items) {
         item.transaction = savedTrx;
         await trxItemRepoTx.save(item);
       }
 
-      // Delete cart items
+      // Remove cart items
       const cartIds = cartItemsTx.map((c) => c.id);
-      await cartRepoTx.delete(cartIds);
+      if (cartIds.length) {
+        await cartRepoTx.delete(cartIds);
+      }
 
       const data: any = {
         id: savedTrx.id,
@@ -125,8 +133,10 @@ export class TransactionsService {
         })),
       };
 
-      return new ResObjDto(data, HttpStatus.OK, 'Success');
+      return data;
     });
+
+    return new ResObjDto(result, HttpStatus.OK, 'Success');
   }
 
   async findByUser(userId: string): Promise<ResObjDto<any>> {

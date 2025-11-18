@@ -18,6 +18,8 @@ import { RateLimiterMiddleware } from './shared/middleware/rate-limiter.middlewa
 import { ErrorLog } from './shared/logger/error-log.entity';
 import { WinstonLoggerService } from './shared/logger/logger-winston.service';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { PaymentsModule } from './payments/payments.module';
+import { ReportsModule } from './reports/reports.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -55,6 +57,8 @@ const ENV = process.env.NODE_ENV;
 
     RedisModule,
     TypeOrmModule.forFeature([ErrorLog]),
+    PaymentsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [
