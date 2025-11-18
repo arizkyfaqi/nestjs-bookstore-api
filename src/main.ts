@@ -28,8 +28,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   const urlServer =
-    process.env.NODE_ENV == 'production'
-      ? 'https://nestjs-bookstore-api-production.up.railway.app/'
+    process.env.NODE_ENV === 'production'
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN || 'nestjs-bookstore-api-production.up.railway.app'}/`
       : 'http://localhost:3000/';
 
   //create the swagger configuration
