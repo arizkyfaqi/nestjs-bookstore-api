@@ -9,9 +9,11 @@ export class RateLimiterMiddleware implements NestMiddleware {
   private readonly limiter;
 
   constructor() {
-    const redisClient = new Redis(
-      process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
-    );
+    const redisUrl = process.env.REDIS_URL;
+    if (!redisUrl) {
+      throw new Error('REDIS_URL is not defined');
+    }
+    const redisClient = new Redis(redisUrl);
 
     this.limiter = rateLimit({
       windowMs: 60 * 1000, // 1 menit

@@ -6,10 +6,11 @@ import Redis from 'ioredis';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-  const redisClient = new Redis(
-    process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
-  );
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) {
+    throw new Error('REDIS_URL is not defined');
+  }
+  const redisClient = new Redis(redisUrl);
   /*
    * Use validation pipes globaly
    */

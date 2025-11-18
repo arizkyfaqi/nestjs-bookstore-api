@@ -34,13 +34,10 @@ Buat file .env di root project dan isi dengan konfigurasi berikut:
 
 ```
 #DB
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=password
-DATABASE_HOST=localhost
-DATABASE_NAME="nestjs-bookstore"
+DATABASE_URL=postgresql://postgres:password@localhost:5432/nestjs-bookstore
 DATABASE_SYNC=true
 DATABASE_AUTOLOAD=true
+PROFILE_API_KEY=somevalue
 PROFILE_API_KEY=somevalue
 #JWT
 JWT_SECRET=secretkey
@@ -52,6 +49,8 @@ JWT_REFRESH_TOKEN_TTL=86400
 API_VERSION=0.1.1
 #REDIS
 REDIS_URL=redis://localhost:6379
+#PAYMENT-CALLBACK
+PAYMENT_WEBHOOK_SECRET=PAYMENT_SIGNATURE
 ```
 
 ### Setup Database
