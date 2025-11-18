@@ -53,6 +53,7 @@ async function bootstrap() {
 
   //enable cross
   app.enableCors();
+  console.log('Running in NODE_ENV:', process.env.NODE_ENV);
   console.log('DATABASE_URL:', process.env.DATABASE_URL);
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
