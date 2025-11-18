@@ -27,11 +27,16 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
+  const urlServer =
+    process.env.NODE_ENV == 'production'
+      ? 'https://nestjs-bookstore-api-production.up.railway.app/'
+      : 'http://localhost:3000/';
+
   //create the swagger configuration
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Nestjs Book Store API Documentation')
-    .setDescription('Use the base API URL as http://localhost:3000')
-    .setTermsOfService('http://localhost:3000/terms-of-service')
+    .setDescription(`Use the base API URL as ${urlServer}`)
+    .setTermsOfService(`${urlServer}terms-of-service`)
     .setLicense(
       'MIT License',
       'https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt',
@@ -45,7 +50,7 @@ async function bootstrap() {
       },
       'access-token',
     )
-    .addServer('http://localhost:3000/')
+    .addServer(urlServer)
     .setVersion('1.0')
     .build();
   //instantiate swagger
@@ -54,6 +59,7 @@ async function bootstrap() {
 
   //enable cross
   app.enableCors();
+  console.log('Url :', urlServer);
   console.log('Running in NODE_ENV:', process.env.NODE_ENV);
   console.log('DATABASE_URL:', process.env.DATABASE_URL);
   const port = process.env.PORT ?? 3000;
