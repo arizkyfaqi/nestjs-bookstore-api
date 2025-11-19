@@ -63,9 +63,9 @@ async function bootstrap() {
   console.log('Running in NODE_ENV:', process.env.NODE_ENV);
   console.log('DATABASE_URL:', process.env.DATABASE_URL);
 
-  const port = process.env.PORT || 3000;
-
-  await app.listen(port);
-  console.info(`Running on port ${port}`);
+  const port = Number(process.env.PORT) || 3000;
+  const host = '0.0.0.0';
+  await app.listen(port, host);
+  console.log(`Application running on http://${host}:${port}`);
 }
 bootstrap();
