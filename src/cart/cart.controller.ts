@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CartService } from './providers/cart.service';
 import { Auth } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
@@ -27,6 +27,10 @@ export class CartController {
   @Post()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Add to cart',
+    description: 'Memasukan item buku ke keranjang',
+  })
   add(@CurrentUser() user: TokenPayload, @Body() dto: AddToCartDto) {
     return this.cartService.addToCart(user, dto);
   }
@@ -34,6 +38,10 @@ export class CartController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Get all cart item',
+    description: 'Menampilkan list semua pesanan yang ada di dalam keranjang',
+  })
   list(@CurrentUser() user: TokenPayload) {
     return this.cartService.getCart(user);
   }
@@ -41,6 +49,11 @@ export class CartController {
   @Patch(':itemId')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Get cart item',
+    description:
+      'Menampilkan satu { itemId } pesanan yang ada di dalam keranjang',
+  })
   update(
     @CurrentUser() user: TokenPayload,
     @Param('itemId') itemId: string,
@@ -52,6 +65,11 @@ export class CartController {
   @Delete(':itemId')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Remove cart item',
+    description:
+      'Menghapus satu { itemId } pesanan yang ada di dalam keranjang',
+  })
   remove(@CurrentUser() user: TokenPayload, @Param('itemId') itemId: string) {
     return this.cartService.removeItem(user, itemId);
   }

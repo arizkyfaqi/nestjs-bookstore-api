@@ -24,6 +24,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiHeaders,
+  ApiOperation,
 } from '@nestjs/swagger';
 import { UpdateStockBookDto } from './dto/update-stock-book';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
@@ -94,6 +95,10 @@ export class BooksController {
   @Patch(':id/stock')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Update stock',
+    description: 'Update stock buku',
+  })
   updateStock(
     @Param('id', new ParseIntPipe()) id: number,
     @Body() dto: UpdateStockBookDto,
