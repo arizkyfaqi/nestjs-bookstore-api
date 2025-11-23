@@ -19,11 +19,20 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { Express } from 'express';
 import { Auth } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiHeaders,
+} from '@nestjs/swagger';
 import { UpdateStockBookDto } from './dto/update-stock-book';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
+import { memoryStorage } from 'multer';
+
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 @Controller('books')
 @ApiBearerAuth('access-token')
@@ -50,11 +59,25 @@ export class BooksController {
   @Post()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.ADMIN)
-  @UseInterceptors(FileInterceptor('cover'))
+  @UseInterceptors(
+    FileInterceptor('cover', {
+      storage: memoryStorage(),
+      limits: { fileSize: MAX_FILE_SIZE },
+      fileFilter: (req, file, cb) => {
+        if (IMAGE_MIME_TYPES.includes(file.mimetype)) cb(null, true);
+        else
+          cb(
+            new Error('Unsupported file type. Only jpeg, png, webp allowed.'),
+            false,
+          );
+      },
+    }),
+  )
+  @ApiConsumes('multipart/form-data')
   create(
-    @UploadedFile() cover: Express.Multer.File,
     @Body() dto: CreateBookDto,
-  ) {
+    @UploadedFile() cover?: Express.Multer.File,
+  ): Promise<ResObjDto<any>> {
     return this.booksService.create(dto, cover);
   }
 

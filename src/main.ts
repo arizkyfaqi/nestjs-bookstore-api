@@ -3,9 +3,11 @@ import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import Redis from 'ioredis';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const redisUrl = process.env.REDIS_URL;
   if (!redisUrl) {
     throw new Error('REDIS_URL is not defined');
@@ -24,6 +26,10 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
+    prefix: '/uploads',
+  });
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
@@ -60,8 +66,6 @@ async function bootstrap() {
   //enable cross
   app.enableCors();
   console.log('Url :', urlServer);
-  console.log('Running in NODE_ENV:', process.env.NODE_ENV);
-  console.log('DATABASE_URL:', process.env.DATABASE_URL);
 
   const port = Number(process.env.PORT) || 3000;
   const host = '0.0.0.0';
