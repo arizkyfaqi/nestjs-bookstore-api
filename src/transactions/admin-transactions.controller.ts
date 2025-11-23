@@ -7,6 +7,7 @@ import {
   NotFoundException,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,6 +22,7 @@ import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { AdminTransactionsService } from './providers/admin-transactions.service';
 import { AdminAllTransactionsResponseDto } from './dto/admin-all-transactions-response.dto';
 import { AdminUserTransactionsResponseDto } from './dto/admin-user-transactions-response.dto';
+import { ReqOrdersDto } from './dto/req-orders.dto';
 
 @ApiTags('Admin Transactions')
 @ApiBearerAuth('access-token')
@@ -44,8 +46,8 @@ export class AdminTransactionsController {
     description: 'List semua transaksi berhasil diambil',
     type: AdminAllTransactionsResponseDto,
   })
-  getAllTransactions() {
-    return this.adminTransactionsService.getAllTransactions();
+  getAllTransactions(@Query() reqParam: ReqOrdersDto) {
+    return this.adminTransactionsService.getAllTransactions(reqParam);
   }
 
   @Get(':userId')

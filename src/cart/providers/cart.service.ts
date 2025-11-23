@@ -14,6 +14,9 @@ import { UpdateCartDto } from '../dto/update-cart.dto';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 import { ResMsgDto } from 'src/utils/dto/res-msg.dto';
+import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
+import { ReqCartDto } from '../dto/req-cart.dto';
+import { PageMetaDto } from 'src/utils/dto/page-meta.dto';
 
 @Injectable()
 export class CartService {
@@ -84,11 +87,20 @@ export class CartService {
     });
   }
 
-  async getCart(user: TokenPayload): Promise<ResObjDto<any>> {
-    const cart = await this.cartRepo.find({
+  async getCart(
+    user: TokenPayload,
+    pageOptionsDto: ReqCartDto,
+  ): Promise<ResPaginatinDto<any>> {
+    let [data, itemCount] = await this.cartRepo.findAndCount({
       where: { user: { id: user.userId } },
+      take: pageOptionsDto.take,
+      skip: pageOptionsDto.skip,
+      order: { createdAt: 'ASC' },
     });
-    return new ResObjDto(cart, HttpStatus.OK, 'Success');
+
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto, itemCount });
+
+    return new ResPaginatinDto(data, pageMetaDto);
   }
 
   async updateCartItem(

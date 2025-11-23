@@ -1,8 +1,9 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
 import { ReportsService } from './providers/reports/reports.service';
+import { ReqReportsDto } from './dto/req-reports.dto';
 
 @Controller('admin/reports')
 @ApiTags('Reports')
@@ -18,7 +19,7 @@ export class ReportsController {
     description:
       'Menampilkan report penjualan, {bookId, title, stockRemaining, quantitySold, totalRevenue}',
   })
-  async getSalesReport() {
-    return this.reportsService.getSalesReport();
+  async getSalesReport(@Query() reqParam: ReqReportsDto) {
+    return this.reportsService.getSalesReport(reqParam);
   }
 }

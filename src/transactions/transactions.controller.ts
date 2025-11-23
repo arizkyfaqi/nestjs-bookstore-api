@@ -7,6 +7,7 @@ import {
   NotFoundException,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,6 +22,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { CheckoutResponseDto } from './dto/checkout-response.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
+import { ReqOrdersDto } from './dto/req-orders.dto';
 
 @ApiTags('Transactions')
 @ApiBearerAuth('access-token')
@@ -65,8 +67,11 @@ export class TransactionsController {
     description: 'List order user berhasil diambil',
     type: [OrderResponseDto],
   })
-  async getOrders(@CurrentUser() user: TokenPayload) {
-    return this.transactionsService.findByUser(user.userId);
+  async getOrders(
+    @CurrentUser() user: TokenPayload,
+    @Query() reqParam: ReqOrdersDto,
+  ) {
+    return this.transactionsService.findByUser(user.userId, reqParam);
   }
 
   @Get('orders/:id')

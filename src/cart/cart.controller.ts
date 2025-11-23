@@ -8,6 +8,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
@@ -17,6 +18,7 @@ import { Auth } from 'src/auth/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
+import { ReqCartDto } from './dto/req-cart.dto';
 
 @ApiTags('Cart')
 @ApiBearerAuth('access-token')
@@ -28,7 +30,7 @@ export class CartController {
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   @ApiOperation({
-    summary: 'Add to cart',
+    summary: 'Tambahkan ke keranjang',
     description: 'Memasukan item buku ke keranjang',
   })
   add(@CurrentUser() user: TokenPayload, @Body() dto: AddToCartDto) {
@@ -39,18 +41,18 @@ export class CartController {
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   @ApiOperation({
-    summary: 'Get all cart item',
+    summary: 'Dapatkan semua pesanan',
     description: 'Menampilkan list semua pesanan yang ada di dalam keranjang',
   })
-  list(@CurrentUser() user: TokenPayload) {
-    return this.cartService.getCart(user);
+  list(@CurrentUser() user: TokenPayload, @Query() reqParam: ReqCartDto) {
+    return this.cartService.getCart(user, reqParam);
   }
 
   @Patch(':itemId')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   @ApiOperation({
-    summary: 'Get cart item',
+    summary: 'Dapatkan detail pesanan',
     description:
       'Menampilkan satu { itemId } pesanan yang ada di dalam keranjang',
   })

@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -31,6 +32,8 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 import { memoryStorage } from 'multer';
+import { ReqBooksDto } from './dto/req-books.dto';
+import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -43,8 +46,11 @@ export class BooksController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
-  findAll(@CurrentUser() user: TokenPayload): Promise<ResObjDto<any>> {
-    return this.booksService.findAll(user);
+  findAll(
+    @CurrentUser() user: TokenPayload,
+    @Query() reqParam: ReqBooksDto,
+  ): Promise<ResPaginatinDto<any>> {
+    return this.booksService.findAll(user, reqParam);
   }
 
   @Get(':id')
