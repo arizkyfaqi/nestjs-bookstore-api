@@ -1,6 +1,6 @@
 # Bookstore API (NestJS)
 
-REST API untuk aplikasi **toko buku online**, menggunakan **NestJS**, **PostgreSQL**, dan fitur seperti JWT authentication, role-based access, upload cover buku, checkout, payment dan logging.
+REST API untuk aplikasi **toko buku online**, menggunakan **NestJS**, **PostgreSQL**, dan fitur seperti JWT authentication, role-based access, management buku, checkout, payment dan reports.
 
 ---
 
@@ -12,6 +12,8 @@ REST API untuk aplikasi **toko buku online**, menggunakan **NestJS**, **PostgreS
 - **Checkout & Payment**: Proses checkout dengan status pembayaran
 - **Admin Dashboard**: Laporan penjualan dan manajemen transaksi
 - **Rate Limiting**: Proteksi API dengan Redis-based rate limiting
+- **Redis Caching**: Menyimpan list buku sebagai cache agar proses get data lebih ringan
+- **Database Transaction**: Untuk menghindari race condition saat transaksi
 - **Session Management**: Single-device session menggunakan Redis
 - **Error Logging**: Winston logger untuk tracking error
 - **Swagger Documentation**: API docs interaktif
@@ -65,6 +67,7 @@ PORT=3000
 
 # Redis
 REDIS_URL=redis://localhost:6379
+CACHE_TTL=300
 
 # Payment Webhook
 PAYMENT_WEBHOOK_SECRET=your-payment-secret
