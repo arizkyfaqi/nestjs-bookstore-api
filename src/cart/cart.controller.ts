@@ -53,9 +53,8 @@ export class CartController {
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
   @ApiOperation({
-    summary: 'Dapatkan detail pesanan',
-    description:
-      'Menampilkan satu { itemId } pesanan yang ada di dalam keranjang',
+    summary: 'Merubah jumlah item pesanan',
+    description: 'Merubah jumlah {quantity} item pesanan',
   })
   update(
     @CurrentUser() user: TokenPayload,
