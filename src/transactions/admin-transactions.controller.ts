@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -15,14 +16,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { AdminTransactionsService } from './providers/admin-transactions.service';
 import { AdminAllTransactionsResponseDto } from './dto/admin-all-transactions-response.dto';
 import { AdminUserTransactionsResponseDto } from './dto/admin-user-transactions-response.dto';
 import { ReqOrdersDto } from './dto/req-orders.dto';
+import { CacheKey } from 'src/shared/decorators/cache.decorator';
+import { HttpCacheInterceptor } from 'src/common/interceptors/redis-cache/http-cache.interceptor';
+import { GET_ADMIN_TRANSACTIONS_CACHE } from 'src/utils/constants/cache.constant';
+import { GET_ADMIN_TRANSACTIONS_DETAIL_CACHE } from 'src/utils/constants/cache.constant';
 
 @ApiTags('Admin Transactions')
 @ApiBearerAuth('access-token')
@@ -46,6 +49,8 @@ export class AdminTransactionsController {
     description: 'List semua transaksi berhasil diambil',
     type: AdminAllTransactionsResponseDto,
   })
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey(GET_ADMIN_TRANSACTIONS_CACHE)
   getAllTransactions(@Query() reqParam: ReqOrdersDto) {
     return this.adminTransactionsService.getAllTransactions(reqParam);
   }
@@ -68,6 +73,8 @@ export class AdminTransactionsController {
     status: 404,
     description: 'User tidak ditemukan',
   })
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey(GET_ADMIN_TRANSACTIONS_DETAIL_CACHE)
   getUserTransactions(@Param('userId') userId: string) {
     return this.adminTransactionsService.getUserTransactions(userId);
   }

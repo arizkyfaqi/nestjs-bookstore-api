@@ -9,6 +9,7 @@ import { Book } from 'src/books/book.entity';
 import { User } from 'src/users/user.entity';
 import { AdminTransactionsController } from './admin-transactions.controller';
 import { AdminTransactionsService } from './providers/admin-transactions.service';
+import { RedisModule } from 'src/shared/redis/redis.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AdminTransactionsService } from './providers/admin-transactions.service
       Book,
       User,
     ]),
+    RedisModule,
   ],
   providers: [TransactionsService, AdminTransactionsService],
   controllers: [TransactionsController, AdminTransactionsController],

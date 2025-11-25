@@ -65,6 +65,7 @@ PORT=3000
 
 # Redis
 REDIS_URL=redis://localhost:6379
+CACHE_TTL=300
 
 # Payment Webhook
 PAYMENT_WEBHOOK_SECRET=your-payment-secret

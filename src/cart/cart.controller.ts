@@ -9,14 +9,15 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CartService } from './providers/cart.service';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ReqCartDto } from './dto/req-cart.dto';
 

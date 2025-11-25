@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartItem } from './cart-item.entity';
 import { Book } from 'src/books/book.entity';
 import { User } from 'src/users/user.entity';
+import { RedisModule } from 'src/shared/redis/redis.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([CartItem, Book, User])],

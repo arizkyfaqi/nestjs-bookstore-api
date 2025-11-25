@@ -16,9 +16,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TransactionsService } from './providers/transactions.service';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { CheckoutResponseDto } from './dto/checkout-response.dto';
 import { OrderResponseDto } from './dto/order-response.dto';

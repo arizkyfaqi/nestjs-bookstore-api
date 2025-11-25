@@ -18,7 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { Express } from 'express';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
 import {
   ApiBearerAuth,
@@ -28,12 +28,18 @@ import {
   ApiOperation,
 } from '@nestjs/swagger';
 import { UpdateStockBookDto } from './dto/update-stock-book';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 import { memoryStorage } from 'multer';
 import { ReqBooksDto } from './dto/req-books.dto';
 import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
+import { HttpCacheInterceptor } from 'src/common/interceptors/redis-cache/http-cache.interceptor';
+import { CacheKey } from 'src/shared/decorators/cache.decorator';
+import {
+  GET_BOOK_DETAIL_CACHE,
+  GET_BOOKS_CACHE,
+} from 'src/utils/constants/cache.constant';
 
 const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -46,6 +52,8 @@ export class BooksController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey(GET_BOOKS_CACHE)
   findAll(
     @CurrentUser() user: TokenPayload,
     @Query() reqParam: ReqBooksDto,
@@ -56,6 +64,8 @@ export class BooksController {
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey(GET_BOOK_DETAIL_CACHE)
   async findOne(
     @Param('id', new ParseIntPipe()) id: number,
   ): Promise<ResObjDto<any>> {
