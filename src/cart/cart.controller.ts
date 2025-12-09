@@ -8,15 +8,18 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Query,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CartService } from './providers/cart.service';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
+import { ReqCartDto } from './dto/req-cart.dto';
 
 @ApiTags('Cart')
 @ApiBearerAuth('access-token')
@@ -27,6 +30,10 @@ export class CartController {
   @Post()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Tambahkan ke keranjang',
+    description: 'Memasukan item buku ke keranjang',
+  })
   add(@CurrentUser() user: TokenPayload, @Body() dto: AddToCartDto) {
     return this.cartService.addToCart(user, dto);
   }
@@ -34,13 +41,21 @@ export class CartController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
-  list(@CurrentUser() user: TokenPayload) {
-    return this.cartService.getCart(user);
+  @ApiOperation({
+    summary: 'Dapatkan semua pesanan',
+    description: 'Menampilkan list semua pesanan yang ada di dalam keranjang',
+  })
+  list(@CurrentUser() user: TokenPayload, @Query() reqParam: ReqCartDto) {
+    return this.cartService.getCart(user, reqParam);
   }
 
   @Patch(':itemId')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Merubah jumlah item pesanan',
+    description: 'Merubah jumlah {quantity} item pesanan',
+  })
   update(
     @CurrentUser() user: TokenPayload,
     @Param('itemId') itemId: string,
@@ -52,6 +67,11 @@ export class CartController {
   @Delete(':itemId')
   @HttpCode(HttpStatus.OK)
   @Auth(RoleType.CUSTOMER, RoleType.ADMIN)
+  @ApiOperation({
+    summary: 'Remove cart item',
+    description:
+      'Menghapus satu { itemId } pesanan yang ada di dalam keranjang',
+  })
   remove(@CurrentUser() user: TokenPayload, @Param('itemId') itemId: string) {
     return this.cartService.removeItem(user, itemId);
   }

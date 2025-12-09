@@ -1,7 +1,7 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
 import { RoleType } from 'src/utils/constants/role-type';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import { ApiCookieAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 export const ROLES_KEY = 'roles';

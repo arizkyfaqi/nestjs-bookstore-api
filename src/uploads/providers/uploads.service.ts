@@ -5,24 +5,22 @@ import * as sharp from 'sharp';
 
 @Injectable()
 export class UploadsService {
-  async processCover(file) {
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
+  async uploadCover(cover) {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
-    const filename = `${Date.now()}-${file.originalname}`;
-    const filepath = path.join(uploadsDir, filename);
+    const filename = `${Date.now()}-${cover.originalname}`;
+    const filepath = path.join(uploadDir, filename);
 
-    // write original
-    fs.writeFileSync(filepath, file.buffer);
+    fs.writeFileSync(filepath, cover.buffer);
 
-    // create thumbnail
     const thumbName = `thumb-${filename}`;
-    const thumbPath = path.join(uploadsDir, thumbName);
-    await sharp(file.buffer).resize(200, 300).toFile(thumbPath);
+    const thumbPath = path.join(uploadDir, thumbName);
+    await sharp(cover.buffer).resize(200, 300).toFile(thumbPath);
 
     return {
-      url: `/uploads/${filename}`,
-      thumbnailUrl: `/uploads/${thumbName}`,
+      coverUrl: `/uploads/${filename}`,
+      thumbUrl: `/uploads/${thumbName}`,
     };
   }
 }

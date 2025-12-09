@@ -24,4 +24,13 @@ export class CreateBookDto {
   @IsNumber()
   @Min(0)
   price: number;
+
+  @ApiProperty({
+    description: 'Cover image file (jpeg, png, webp). Max 5MB',
+    format: 'binary',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  cover?: string;
 }

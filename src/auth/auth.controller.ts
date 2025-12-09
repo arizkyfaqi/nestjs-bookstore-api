@@ -8,16 +8,22 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './providers/auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { Auth } from './decorators/roles.decorator';
+import { Auth } from '../shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUser } from '../shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 import { ResMsgDto } from 'src/utils/dto/res-msg.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -33,6 +39,18 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOperation({
+    summary: 'User login',
+    description:
+      'Authenticate user dan return JWT access token serta masa berlaku token (expiresIn).',
+  })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Berhasil login. Return berisi accessToken dan expiresIn (detik).',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid email or password' })
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(@Body() dto: LoginDto): Promise<ResObjDto<any>> {
     const user = await this.authService.validateUser(dto.email, dto.password);

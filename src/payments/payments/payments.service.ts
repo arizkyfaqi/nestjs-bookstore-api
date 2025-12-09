@@ -77,7 +77,7 @@ export class PaymentsService {
     await this.transactionRepo.save(trx);
 
     const data: any = {
-      message: 'Callback processed successfully',
+      message: 'Payment processed successfully',
       transactionId: trx.id,
       status: trx.paymentStatus,
     };

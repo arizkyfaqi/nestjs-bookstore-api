@@ -1,8 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from 'src/books/book.entity';
+import { ReqReportsDto } from 'src/reports/dto/req-reports.dto';
 import { TransactionItem } from 'src/transactions/transaction-item.entity';
+import { PageMetaDto } from 'src/utils/dto/page-meta.dto';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
+import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -19,8 +22,18 @@ export class ReportsService {
    * Sales Report (Per Buku)
    * Jumlah Terjual, Stock Tersisa, Total Pendapatan
    */
-  async getSalesReport(): Promise<ResObjDto<any>> {
-    const result = await this.trxItemRepo
+  async getSalesReport(
+    pageOptionsDto: ReqReportsDto,
+  ): Promise<ResPaginatinDto<any>> {
+    const countQuery = await this.trxItemRepo
+      .createQueryBuilder('ti')
+      .leftJoin('ti.book', 'book')
+      .select('COUNT(DISTINCT book.id)', 'total')
+      .getRawOne();
+
+    const totalCount = Number(countQuery.total) || 0;
+
+    const reports = await this.trxItemRepo
       .createQueryBuilder('ti')
       .leftJoin('ti.book', 'book')
       .select('book.id', 'bookId')
@@ -31,8 +44,11 @@ export class ReportsService {
       .groupBy('book.id')
       .addGroupBy('book.title')
       .addGroupBy('book.stock')
-      .orderBy('revenue', 'DESC')
-      .getRawMany();
+      .orderBy('revenue', 'DESC');
+
+    reports.limit(pageOptionsDto.take).offset(pageOptionsDto.skip);
+
+    const result = await reports.getRawMany();
 
     const data = result.map((row) => ({
       bookId: row.bookId,
@@ -42,6 +58,11 @@ export class ReportsService {
       totalRevenue: Number(row.revenue) || 0,
     }));
 
-    return new ResObjDto(data, HttpStatus.OK, 'Success');
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto,
+      itemCount: totalCount,
+    });
+
+    return new ResPaginatinDto(data, pageMetaDto);
   }
 }

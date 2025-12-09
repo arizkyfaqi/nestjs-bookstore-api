@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import { UserService } from './providers/user.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Auth } from 'src/auth/decorators/roles.decorator';
+import { Auth } from 'src/shared/decorators/roles.decorator';
 import { RoleType } from 'src/utils/constants/role-type';
-import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { CurrentUser } from 'src/shared/decorators/current-user.decorator';
 import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 

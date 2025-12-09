@@ -11,22 +11,38 @@ import { TokenPayload } from 'src/utils/interfaces/token-payload.interfaces';
 import { RoleType } from 'src/utils/constants/role-type';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
 import { ResMsgDto } from 'src/utils/dto/res-msg.dto';
+import { UploadsService } from 'src/uploads/providers/uploads.service';
+import { ReqBooksDto } from '../dto/req-books.dto';
+import { PageMetaDto } from 'src/utils/dto/page-meta.dto';
+import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
 
 @Injectable()
 export class BooksService {
   constructor(
     @InjectRepository(Book)
     private readonly repo: Repository<Book>,
+    private readonly uploadService: UploadsService,
   ) {}
 
-  async findAll(user: TokenPayload): Promise<ResObjDto<any>> {
-    const condition = { stock: MoreThan(0) };
-    let book = await this.repo.find();
+  async findAll(
+    user: TokenPayload,
+    pageOptionsDto: ReqBooksDto,
+  ): Promise<ResPaginatinDto<any>> {
+    let condition: any = {};
     if (user.role == RoleType.CUSTOMER) {
-      book = await this.repo.find({ where: condition });
+      condition = { stock: MoreThan(0) };
     }
 
-    return new ResObjDto(book, HttpStatus.OK, 'Success');
+    let [data, itemCount] = await this.repo.findAndCount({
+      where: condition,
+      take: pageOptionsDto.take,
+      skip: pageOptionsDto.skip,
+      order: { createdAt: 'ASC' },
+    });
+
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto, itemCount });
+
+    return new ResPaginatinDto(data, pageMetaDto);
   }
 
   async findOne(id: number) {
@@ -43,19 +59,9 @@ export class BooksService {
     let thumbUrl: string = '';
 
     if (cover) {
-      const uploadDir = path.join(process.cwd(), 'uploads');
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-      const filename = `${Date.now()}-${cover.originalname}`;
-      const filepath = path.join(uploadDir, filename);
-      fs.writeFileSync(filepath, cover.buffer);
-
-      const thumbName = `thumb-${filename}`;
-      const thumbPath = path.join(uploadDir, thumbName);
-      await sharp(cover.buffer).resize(200, 300).toFile(thumbPath);
-
-      coverUrl = `/uploads/${filename}`;
-      thumbUrl = `/uploads/${thumbName}`;
+      const uploadCover = await this.uploadService.uploadCover(cover);
+      coverUrl = uploadCover.coverUrl;
+      thumbUrl = uploadCover.thumbUrl;
     }
 
     const book = this.repo.create({ ...dto, coverUrl, thumbnailUrl: thumbUrl });

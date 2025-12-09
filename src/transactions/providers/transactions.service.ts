@@ -13,6 +13,9 @@ import { TransactionItem } from '../transaction-item.entity';
 import { Transaction } from '../transaction.entity';
 import { PaymentStatus } from '../enum/payment-status.enum';
 import { ResObjDto } from 'src/utils/dto/res-obj.dto';
+import { ReqOrdersDto } from '../dto/req-orders.dto';
+import { ResPaginatinDto } from 'src/utils/dto/res-pagination.dto';
+import { PageMetaDto } from 'src/utils/dto/page-meta.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -139,13 +142,21 @@ export class TransactionsService {
     return new ResObjDto(result, HttpStatus.OK, 'Success');
   }
 
-  async findByUser(userId: string): Promise<ResObjDto<any>> {
-    const order = await this.transactionRepo.find({
+  async findByUser(
+    userId: string,
+    pageOptionsDto: ReqOrdersDto,
+  ): Promise<ResPaginatinDto<any>> {
+    const [data, itemCount] = await this.transactionRepo.findAndCount({
       where: { user: { id: userId } },
       relations: ['items', 'items.book'],
+      take: pageOptionsDto.take,
+      skip: pageOptionsDto.skip,
       order: { createdAt: 'DESC' },
     });
-    return new ResObjDto(order, HttpStatus.OK, 'Success');
+
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto, itemCount });
+
+    return new ResPaginatinDto(data, pageMetaDto);
   }
 
   async findOneForUser(
